@@ -7,8 +7,8 @@ import de.hoomit.projects.jsondbupdate.model.JsonDatabaseChangeLog;
 import de.hoomit.projects.jsondbupdate.repository.JsonDbUpdateRepository;
 import de.hoomit.projects.jsondbupdate.utils.CollectionUtils;
 import de.hoomit.projects.jsondbupdate.utils.FilenameUtils;
+import de.hoomit.projects.jsondbupdate.utils.IOUtils;
 import de.hoomit.projects.jsondbupdate.utils.ResourceUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.supercsv.cellprocessor.constraint.NotNull;
@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
@@ -51,7 +50,7 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChangeLog> allApplied = jsonDbUpdateRepository.findAllUpdatesById(configurationFiles);
 
         if (CollectionUtils.isNotEmpty(allApplied)) {
-            configurationFiles.retainAll(allApplied.stream().map(JsonDatabaseChangeLog::getId).collect(Collectors.toList()));
+            configurationFiles.removeAll(allApplied.stream().map(JsonDatabaseChangeLog::getId).collect(Collectors.toList()));
         }
 
         if (CollectionUtils.isNotEmpty(configurationFiles)) {
@@ -121,8 +120,8 @@ public class JsonDbUpdateService {
     }
 
     private String calculateMd5Sum(final String configurationFile) {
-        try (final InputStreamReader inputStreamReader = readConfigurationFile(configurationFile)) {
-            final byte[] content = IOUtils.toByteArray(inputStreamReader, Charset.defaultCharset());
+        try (final InputStream inputStream = ResourceUtils.readConfigurationFile(configurationFile)) {
+            final byte[] content = IOUtils.toByteArray(inputStream);
             final byte[] md5Digest = MessageDigest.getInstance("MD5").digest(content);
             return new BigInteger(1, md5Digest).toString(16);
         } catch (IOException | NoSuchAlgorithmException e) {
@@ -167,7 +166,8 @@ public class JsonDbUpdateService {
 
         final CsvPreference csvPreference = new CsvPreference.Builder('"', ';', "\n").build();
 
-        try (final InputStreamReader inputStreamReader = readConfigurationFile(configurationFile);
+        try (final InputStream inputStream = ResourceUtils.readConfigurationFile(configurationFile);
+             final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              final CsvBeanReader beanReader = new CsvBeanReader(inputStreamReader, csvPreference)) {
             final String[] header = beanReader.getHeader(true);
 
@@ -181,13 +181,6 @@ public class JsonDbUpdateService {
 
         return changes.stream()
                 .collect(Collectors.groupingBy(JsonDatabaseChange::getAction));
-    }
-
-    private InputStreamReader readConfigurationFile(final String configurationFile) {
-        final String resourceName = "/" + CONFIG_FOLDER + "/" + configurationFile + ".csv";
-        final InputStream inputStream = ResourceUtils.getResourceAsStream(resourceName);
-
-        return new InputStreamReader(inputStream);
     }
 
     private List<String> findAllConfigurationFiles() {

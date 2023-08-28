@@ -6,7 +6,7 @@
 
     <groupId>de.hoomit.projects</groupId>
     <artifactId>json-db-update</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>JSON DB Update</name>
     <url>http://www.hoom-it.de</url>

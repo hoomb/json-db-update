@@ -1,0 +1,4 @@
+action;entity;field;attribute;newName
+RENAME;Customer;firstPerson;phone;phone2
+ADD;Customer;firstPerson;phone1;
+REMOVE;Customer;firstPerson;mobile;

@@ -186,9 +186,17 @@ public class JsonDbUpdateService {
     private List<String> findAllConfigurationFiles() {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         final URL url = loader.getResource(CONFIG_FOLDER);
+
+        if (url == null) {
+            LOGGER.info("JsonDbUpdate -> no configuration file found unter {}", CONFIG_FOLDER);
+            return Collections.emptyList();
+        }
+
         final String path = Objects.requireNonNull(url).getPath();
 
         final File[] csvFiles = new File(path).listFiles((dir, name) -> name.endsWith(".csv"));
+
+        LOGGER.info("csvFiles ---> " + csvFiles);
 
         if (csvFiles != null && csvFiles.length > 0) {
             return Arrays.stream(csvFiles)

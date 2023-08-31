@@ -1,3 +1,7 @@
+[![License](https://img.shields.io/github/license/hoomb/json-db-update.svg)](https://raw.githubusercontent.com/hoomb/json-db-update/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/de.hoomit.projects/json-db-update.svg)](https://central.sonatype.com/artifact/de.hoomit.projectsjson-db-update/)
+[![JavaDoc](http://javadoc.io/badge/de.hoomit.projectsjson-db-update.svg)](http://www.javadoc.io/doc/de.hoomit.projectsjson-db-update)
+
 # Introduction
 
 Storing relationships as JSON in Hibernate can have certain benefits in terms of performance and usability, but it also comes with its own set of considerations. 
@@ -41,7 +45,7 @@ add this dependency to your project
     <dependency>
         <groupId>de.hoomit.projects</groupId>
         <artifactId>json-db-update</artifactId>
-        <version>1.1</version>
+        <version>RELEASE_VERSION</version>
     </dependency>
 ```
 

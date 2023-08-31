@@ -6,7 +6,7 @@
 
     <groupId>de.hoomit.projects</groupId>
     <artifactId>json-db-update</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.6</version>
 
     <name>JSON DB Update</name>
     <description>

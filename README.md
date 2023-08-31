@@ -45,7 +45,7 @@ add this dependency to your project
     <dependency>
         <groupId>de.hoomit.projects</groupId>
         <artifactId>json-db-update</artifactId>
-        <version>RELEASE_VERSION</version>
+        <version>1.5</version>
     </dependency>
 ```
 

@@ -196,8 +196,6 @@ public class JsonDbUpdateService {
 
         final File[] csvFiles = new File(path).listFiles((dir, name) -> name.endsWith(".csv"));
 
-        LOGGER.info("csvFiles ---> " + csvFiles);
-
         if (csvFiles != null && csvFiles.length > 0) {
             return Arrays.stream(csvFiles)
                     .map(File::getName)

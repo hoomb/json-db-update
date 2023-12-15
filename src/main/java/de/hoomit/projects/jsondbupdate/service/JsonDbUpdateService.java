@@ -77,9 +77,8 @@ public class JsonDbUpdateService {
         if (CollectionUtils.isNotEmpty(addFieldActions)) {
             addFieldActions.forEach(jsonDatabaseChange -> {
                 final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                final String fieldName = getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField());
-
-                jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute()));
             });
         }
     }
@@ -89,9 +88,8 @@ public class JsonDbUpdateService {
         if (CollectionUtils.isNotEmpty(removeFieldActions)) {
             removeFieldActions.forEach(jsonDatabaseChange -> {
                 final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                final String fieldName = getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField());
-
-                jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.getAttribute());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.getAttribute()));
             });
         }
     }
@@ -101,9 +99,8 @@ public class JsonDbUpdateService {
         if (CollectionUtils.isNotEmpty(renameFieldActions)) {
             renameFieldActions.forEach(jsonDatabaseChange -> {
                 final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                final String fieldName = getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField());
-
-                jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getNewName());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getNewName()));
             });
         }
     }
@@ -125,6 +122,7 @@ public class JsonDbUpdateService {
             final byte[] md5Digest = MessageDigest.getInstance("MD5").digest(content);
             return new BigInteger(1, md5Digest).toString(16);
         } catch (IOException | NoSuchAlgorithmException e) {
+            LOGGER.error("could not calculate checksum of {}", configurationFile);
             throw new RuntimeException(e);
         }
     }
@@ -136,21 +134,24 @@ public class JsonDbUpdateService {
 
             return tableAnnotation.name();
         } catch (ClassNotFoundException e) {
+            LOGGER.error("Could not find table from entity {}", entityName);
             throw new RuntimeException(e);
         }
     }
 
-    private String getFieldNameFromEntity(final String entityName, final String fieldName) {
+    private Optional<String> getFieldNameFromEntity(final String entityName, final String fieldName) {
         try {
             final Class<?> entityClass = Class.forName(applicationConfiguration.getBasePackage() + entityName);
             final Field field = entityClass.getDeclaredField(fieldName);
 
             final Column columnAnnotation = field.getAnnotation(Column.class);
 
-            return columnAnnotation != null ? columnAnnotation.name() : fieldName;
+            return Optional.ofNullable(columnAnnotation != null ? columnAnnotation.name() : fieldName);
         } catch (ClassNotFoundException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Could not find field {} in entity {}", fieldName, entityName);
         }
+
+        return Optional.empty();
     }
 
     private Map<Action, List<JsonDatabaseChange>> readDatabaseChange(final String configurationFile) {
@@ -176,6 +177,7 @@ public class JsonDbUpdateService {
                 changes.add(jsonDatabaseChange);
             }
         } catch (IOException e) {
+            LOGGER.error("invalid configuration file {}", configurationFile);
             throw new RuntimeException(e);
         }
 

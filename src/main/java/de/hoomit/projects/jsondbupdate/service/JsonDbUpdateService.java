@@ -202,6 +202,7 @@ public class JsonDbUpdateService {
             return Arrays.stream(csvFiles)
                     .map(File::getName)
                     .map(FilenameUtils::removeExtension)
+                    .sorted(Comparator.comparing(f1 -> f1.substring(1, f1.indexOf('_'))))
                     .collect(Collectors.toList());
         }
 

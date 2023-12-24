@@ -68,7 +68,11 @@ The new Person model looks like this:
 
 create a file under `src/main/resources/config/jsondbupdate` (create `config/jsondbupdate` if necessary) and name it something like <timestamp>_update_customer.csv
 
-**Note:** there is no naming convention. It is just enough to create a csv with a proper format
+**Note:** there is no naming convention. It is just enough to create a csv with a proper format. Although it is highly recommended to use this format to have a proper execution order:
+`yyyyMMddHHmmss_description.csv`
+
+You can generate it using this command:
+`date +%Y%m%d%H%M%S`
 
 our file does look like this:
 
@@ -100,6 +104,36 @@ public class AppStartupRunner {
                 env.getProperty("spring.datasource.password"));
   }
 }
+```
+
+### Nested Attributes
+If you have nested attributes like "street" in this example and want to remove them, simply use a Dot "." to address sub attribute:
+
+```json
+{
+   "customer": {
+      "name": "John Doe",
+      "age": 30,
+      "address": {
+         "street": {
+            "name": "Main Street",
+            "number": "123"
+         },
+         "city": "Anytown",
+         "state": "CA",
+         "zipCode": "12345",
+         "country": "USA"
+      },
+      "email": "john.doe@example.com",
+      "phone": "555-1234"
+   }
+}
+```
+So your CSV will be look like to remove "number" from "street":
+
+```csv
+action;entity;field;attribute;newName
+REMOVE;Customer;address;street.number;
 ```
 
 ## TL;LD Section :)

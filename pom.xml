@@ -5,7 +5,7 @@
 
     <groupId>de.hoomit.projects</groupId>
     <artifactId>json-db-update</artifactId>
-    <version>1.12</version>
+    <version>1.13-SNAPSHOT</version>
 
     <name>JSON DB Update</name>
     <description>
@@ -31,7 +31,7 @@
         <developerConnection>scm:git:git@github.com:hoomb/json-db-update.git</developerConnection>
         <url>scm:git:git@github.com:hoomb/json-db-update.git</url>
         <connection>scm:git:git@github.com:hoomb/json-db-update.git</connection>
-        <tag>json-db-update-1.12</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>

@@ -28,7 +28,7 @@ public class JsonDbUpdateRepository {
             " VALUES(?, ?, ?, ?, ?);";
     private static final String FIND_ALL_UPDATES_BY_ID_QUERY = "SELECT * FROM " + JSON_DATABASE_CHANGE_LOG_TABLE + " WHERE id = ANY (?)";
     private static final String RENAME_FIELD_QUERY = "UPDATE %s SET %s = (REPLACE(%s::TEXT, '\"%s\"', '\"%s\"'))::JSONB";
-    private static final String ADD_FIELD_QUERY = "UPDATE %s SET %s = %s::JSONB || '{\"%s\": null}'";
+    private static final String ADD_FIELD_QUERY = "UPDATE %s SET %s = jsonb_set(%s::jsonb, '{%s}','%s')";
     private static final String DELETE_FIELD_QUERY = "UPDATE %s SET %s = %s::JSONB #- '{%s}'";
 
     public Connection createConnection() throws SQLException {
@@ -81,8 +81,8 @@ public class JsonDbUpdateRepository {
         }
     }
 
-    public void addField(final String tableName, final String fieldName, final String attribute) {
-        final String addFieldQuery = String.format(ADD_FIELD_QUERY, tableName, fieldName, fieldName, attribute);
+    public void addField(final String tableName, final String fieldName, final String attribute, final String value) {
+        final String addFieldQuery = String.format(ADD_FIELD_QUERY, tableName, fieldName, fieldName, attribute.replace('.', ','), value);
 
         try (final Connection connection = createConnection();
              final Statement statement = connection.createStatement()) {

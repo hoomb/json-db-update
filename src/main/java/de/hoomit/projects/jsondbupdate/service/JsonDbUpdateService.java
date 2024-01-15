@@ -78,7 +78,7 @@ public class JsonDbUpdateService {
             addFieldActions.forEach(jsonDatabaseChange -> {
                 final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
                 getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute()));
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getValue()));
             });
         }
     }

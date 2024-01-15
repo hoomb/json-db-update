@@ -59,7 +59,7 @@ All we want to do are the following changes:
 
 1. remove `phone2`
 2. rename `phone1` to `phone`
-3. add a new attribute `email`
+3. add a new attribute `email` with value `test`
 
 The new Person model looks like this:
 
@@ -79,10 +79,10 @@ our file does look like this:
 `20230825230322_update_customer.csv`
 
 ```csv
-action;entity;field;attribute;newName
-RENAME;Customer;person;phone1;phone
-REMOVE;Customer;person;phone2;
-ADD;Customer;person;email;
+action;entity;field;attribute;newName;value
+RENAME;Customer;person;phone1;phone;;
+REMOVE;Customer;person;phone2;;
+ADD;Customer;person;email;;test
 ```
 
 ### Step 3
@@ -132,8 +132,9 @@ If you have nested attributes like "street" in this example and want to remove t
 So your CSV will be look like to remove "number" from "street":
 
 ```csv
-action;entity;field;attribute;newName
-REMOVE;Customer;address;street.number;
+action;entity;field;attribute;newName;value
+REMOVE;Customer;address;street.number;;
+ADD;Customer;address;street.floor;15
 ```
 
 ## TL;LD Section :)

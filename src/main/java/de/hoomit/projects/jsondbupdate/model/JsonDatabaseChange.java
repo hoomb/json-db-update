@@ -6,6 +6,7 @@ public class JsonDatabaseChange {
     private String field;
     private String attribute;
     private String newName;
+    private String value;
 
     public Action getAction() {
         return action;
@@ -49,5 +50,13 @@ public class JsonDatabaseChange {
 
     public void setAction(final String action) {
         this.action = Action.valueOf(action);
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

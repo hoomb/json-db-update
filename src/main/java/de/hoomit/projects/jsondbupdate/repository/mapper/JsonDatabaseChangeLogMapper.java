@@ -11,20 +11,20 @@ import java.time.ZonedDateTime;
 
 public class JsonDatabaseChangeLogMapper {
 
+    private static final String DATE_EXECUTED_COLUMN = "date_executed";
+
     public JsonDatabaseChangeLog mapTo(final ResultSet resultSet) throws SQLException {
-        final JsonDatabaseChangeLog result = new JsonDatabaseChangeLog();
-
-        result.setId(resultSet.getString("id"));
-        result.setFilename(resultSet.getString("filename"));
-        result.setDateExecuted(fromTimestamp(resultSet, "date_executed"));
-        result.setMd5Sum(resultSet.getString("md5sum"));
-        result.setDescription(resultSet.getString("description"));
-
-        return result;
+        return new JsonDatabaseChangeLog(
+                resultSet.getString("id"),
+                resultSet.getString("filename"),
+                fromTimestamp(resultSet),
+                resultSet.getString("md5sum"),
+                resultSet.getString("description")
+        );
     }
 
-    private ZonedDateTime fromTimestamp(final ResultSet resultSet, final String column) throws SQLException {
-        final Timestamp timestamp = resultSet.getTimestamp(column);
+    private ZonedDateTime fromTimestamp(final ResultSet resultSet) throws SQLException {
+        final Timestamp timestamp = resultSet.getTimestamp(DATE_EXECUTED_COLUMN);
 
         return getDateTime(timestamp);
     }

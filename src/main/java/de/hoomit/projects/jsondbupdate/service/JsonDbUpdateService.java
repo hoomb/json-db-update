@@ -50,7 +50,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChangeLog> allApplied = jsonDbUpdateRepository.findAllUpdatesById(configurationFiles);
 
         if (CollectionUtils.isNotEmpty(allApplied)) {
-            configurationFiles.removeAll(allApplied.stream().map(JsonDatabaseChangeLog::getId).collect(Collectors.toList()));
+            configurationFiles.removeAll(allApplied.stream()
+                    .map(JsonDatabaseChangeLog::id)
+                    .toList());
         }
 
         if (CollectionUtils.isNotEmpty(configurationFiles)) {
@@ -76,9 +78,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> addFieldActions = actionListMap.get(Action.ADD);
         if (CollectionUtils.isNotEmpty(addFieldActions)) {
             addFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getValue()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
+                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.attribute(), jsonDatabaseChange.value()));
             });
         }
     }
@@ -87,9 +89,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> removeFieldActions = actionListMap.get(Action.REMOVE);
         if (CollectionUtils.isNotEmpty(removeFieldActions)) {
             removeFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.getAttribute()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
+                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.attribute()));
             });
         }
     }
@@ -98,20 +100,21 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> renameFieldActions = actionListMap.get(Action.RENAME);
         if (CollectionUtils.isNotEmpty(renameFieldActions)) {
             renameFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
-                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getNewName()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
+                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.attribute(), jsonDatabaseChange.newName()));
             });
         }
     }
 
     private void persistConfiguration(final String configurationFile) {
-        final JsonDatabaseChangeLog jsonDatabaseChangeLog = new JsonDatabaseChangeLog();
-        jsonDatabaseChangeLog.setId(configurationFile);
-        jsonDatabaseChangeLog.setFilename(CONFIG_FOLDER + "/" + configurationFile + ".csv");
-        jsonDatabaseChangeLog.setDescription("");
-        jsonDatabaseChangeLog.setDateExecuted(ZonedDateTime.now());
-        jsonDatabaseChangeLog.setMd5Sum(calculateMd5Sum(configurationFile));
+        final JsonDatabaseChangeLog jsonDatabaseChangeLog = new JsonDatabaseChangeLog(
+                configurationFile,
+                CONFIG_FOLDER + "/" + configurationFile + ".csv",
+                ZonedDateTime.now(),
+                calculateMd5Sum(configurationFile),
+                ""
+        );
 
         jsonDbUpdateRepository.persistConfiguration(jsonDatabaseChangeLog);
     }
@@ -182,7 +185,7 @@ public class JsonDbUpdateService {
         }
 
         return changes.stream()
-                .collect(Collectors.groupingBy(JsonDatabaseChange::getAction));
+                .collect(Collectors.groupingBy(JsonDatabaseChange::action));
     }
 
     private List<String> findAllConfigurationFiles() {
@@ -203,7 +206,7 @@ public class JsonDbUpdateService {
                     .map(File::getName)
                     .map(FilenameUtils::removeExtension)
                     .sorted(Comparator.comparing(f1 -> f1.substring(1, f1.indexOf('_'))))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return Collections.emptyList();

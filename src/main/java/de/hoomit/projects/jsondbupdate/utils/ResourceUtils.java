@@ -1,6 +1,5 @@
 package de.hoomit.projects.jsondbupdate.utils;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import static de.hoomit.projects.jsondbupdate.service.JsonDbUpdateService.CONFIG_FOLDER;
@@ -8,19 +7,15 @@ import static de.hoomit.projects.jsondbupdate.service.JsonDbUpdateService.CONFIG
 public class ResourceUtils {
 
     public static InputStream readConfigurationFile(final String configurationFile) {
-        final String resourceName = "/" + CONFIG_FOLDER + "/" + configurationFile + ".csv";
-        return ResourceUtils.getResourceAsStream(resourceName);
+        final String resourceName = CONFIG_FOLDER + "/" + configurationFile + ".csv";
 
-        //return new InputStreamReader(inputStream);
+        return ResourceUtils.getResourceAsStream(resourceName);
     }
 
-    private static InputStream getResourceAsStream(String resource) {
-        try (final InputStream inputStream = getContextClassLoader().getResourceAsStream(resource)) {
+    private static InputStream getResourceAsStream(final String resource) {
+        final InputStream inputStream = getContextClassLoader().getResourceAsStream(resource);
 
-            return inputStream == null ? ResourceUtils.class.getResourceAsStream(resource) : inputStream;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return inputStream == null ? ResourceUtils.class.getResourceAsStream("/" + resource) : inputStream;
     }
 
     private static ClassLoader getContextClassLoader() {

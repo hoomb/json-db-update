@@ -3,7 +3,7 @@
 
 # Introduction
 
-Storing relationships as JSON in Hibernate can have certain benefits in terms of performance and usability, but it also comes with its own set of considerations. 
+Storing relationships as JSON in Hibernate can have certain benefits in terms of performance and usability, but it also comes with its own set of considerations.
 
 It is now possible to specify json objects directly on JPA Entity Objects thanks to Vlad Mihalcea's great work with his "hypersistence-utils" (https://github.com/vladmihalcea/hypersistence-utils).
 In this piece, he describes the entire process: https://vladmihalcea.com/how-to-map-json-objects-using-generic-hibernate-types
@@ -33,7 +33,7 @@ However, this causes the deserializer to catch just those properties that it was
 
 # Solution
 
-the above problem motivated me to write this little tool to change the json objects once needed. 
+The above problem motivated me to write this little tool to change the json objects once needed.
 The integration is very simple and all you need is add the dependency and define a `changelog`
 
 ### Step 1
@@ -44,21 +44,21 @@ add this dependency to your project
     <dependency>
         <groupId>de.hoomit.projects</groupId>
         <artifactId>json-db-update</artifactId>
-        <version>1.15</version>
+        <version>1.16</version>
     </dependency>
 ```
 
 ### Step 2
 
-Imagine we have a mode like this:
+Imagine we have a model like this:
 
 ![Customer_old.png](.github%2FCustomer_old.png)
 
 
 All we want to do are the following changes:
 
-1. remove `phone2`
-2. rename `phone1` to `phone`
+1. rename `phone1` to `phone`
+2. remove `phone2`
 3. add a new attribute `email` with value `test`
 
 The new Person model looks like this:
@@ -66,12 +66,12 @@ The new Person model looks like this:
 ![Customer_new.png](.github%2FCustomer_new.png)
 
 
-create a file under `src/main/resources/config/jsondbupdate` (create `config/jsondbupdate` if necessary) and name it something like <timestamp>_update_customer.csv
+create a file under `src/main/resources/config/jsondbupdate` (create `config/jsondbupdate` if necessary) and name it something like `<timestamp>_update_customer.csv`
 
-**Note:** there is no naming convention. It is just enough to create a csv with a proper format. Although it is highly recommended to use this format to have a proper execution order:
+**Note:** the file name must contain at least one underscore (`_`). The part before the first underscore determines the execution order, so it is highly recommended to use this format:
 `yyyyMMddHHmmss_description.csv`
 
-You can generate it using this command:
+You can generate the timestamp using this command:
 `date +%Y%m%d%H%M%S`
 
 our file does look like this:
@@ -80,34 +80,48 @@ our file does look like this:
 
 ```csv
 action;entity;field;attribute;newName;value
-RENAME;Customer;person;phone1;phone;;
+RENAME;Customer;person;phone1;phone;
 REMOVE;Customer;person;phone2;;
 ADD;Customer;person;email;;test
 ```
+
+Every row must have exactly six columns (five semicolons). Unused columns stay empty: `RENAME` uses `newName`, `ADD` uses `value`, and `REMOVE` uses neither. The `action` column is case-insensitive.
+
+**Values:** the `value` column accepts plain strings (`test`), numbers (`15`, `4.99`), booleans (`true`/`false`), `null`, and inline JSON objects or arrays (`{"a":1}`). Plain strings are automatically stored as JSON strings.
 
 ### Step 3
 
 Attach the `json-db-update` to your current process. E.g. If you are using Spring Boot, you can attach it to Application start event:
 
 ```java
+import de.hoomit.projects.jsondbupdate.JsonDbUpdate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
 @Component
 public class AppStartupRunner {
-   
-   @Autowired 
+
+   @Autowired
    private Environment env;
 
    @EventListener(ApplicationReadyEvent.class)
-  final JsonDbUpdate jsonDbUpdate = new JsonDbUpdate();
-        jsonDbUpdate.startup("de.hoomit.myapplication.domain",   //<---- this is the package where you keep your entities
-                env.getProperty("spring.datasource.url"),
-                env.getProperty("spring.datasource.username"),
-                env.getProperty("spring.datasource.password"));
-  }
+   public void run() {
+      final JsonDbUpdate jsonDbUpdate = new JsonDbUpdate();
+      jsonDbUpdate.startup("your.base.package.domain",
+              env.getProperty("spring.datasource.url"),
+              env.getProperty("spring.datasource.username"),
+              env.getProperty("spring.datasource.password"));
+   }
 }
 ```
 
+Each changelog file is executed exactly once: applied updates are tracked in the `json_database_change_log` table and skipped on subsequent application starts.
+
 ### Nested Attributes
-If you have nested attributes like "street" in this example and want to remove them, simply use a Dot "." to address sub attribute:
+If you have nested attributes like "street" in this example and want to remove them, simply use a Dot "." to address sub attributes:
 
 ```json
 {
@@ -129,15 +143,26 @@ If you have nested attributes like "street" in this example and want to remove t
    }
 }
 ```
-So your CSV will be look like to remove "number" from "street":
+So your CSV will look like this to remove "number" from "street" and add "floor" with value 15:
 
 ```csv
 action;entity;field;attribute;newName;value
 REMOVE;Customer;address;street.number;;
-ADD;Customer;address;street.floor;15
+ADD;Customer;address;street.floor;;15
 ```
 
-## TL;LD Section :)
+### JSON Arrays
+
+`ADD` and `REMOVE` also work when the column stores a JSON **array** of objects (e.g. a `List<ExtraCost>` mapped as JSONB). In that case the change is applied to **every element** of the array:
+
+```csv
+action;entity;field;attribute;newName;value
+REMOVE;Order;extraCosts;title;;
+```
+
+turns `[{"title":"Shipping","amount":4.99},{"title":"Assembly","amount":49.0}]` into `[{"amount":4.99},{"amount":49.0}]`. Empty arrays and `NULL` columns are left untouched.
+
+## TL;DR Section :)
 
 Let's explore how defining json objects approach can impact performance and usability:
 
@@ -173,4 +198,3 @@ Usability Considerations:
 ## Conclusion:
 
 Storing OneToOne relationships as JSON in Hibernate can indeed improve performance and usability in certain scenarios. It can reduce the need for complex joins and multiple queries, leading to faster data retrieval and a more intuitive data structure. However, this approach also brings challenges related to debugging, querying, data integrity, and potential storage overhead. Careful consideration of the specific use case and trade-offs is essential before deciding to use this approach.
-

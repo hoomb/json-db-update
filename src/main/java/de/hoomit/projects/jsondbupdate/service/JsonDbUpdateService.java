@@ -28,7 +28,14 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JsonDbUpdateService {
@@ -78,9 +85,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> addFieldActions = actionListMap.get(Action.ADD);
         if (CollectionUtils.isNotEmpty(addFieldActions)) {
             addFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
-                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.attribute(), jsonDatabaseChange.value()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.addField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getValue()));
             });
         }
     }
@@ -89,9 +96,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> removeFieldActions = actionListMap.get(Action.REMOVE);
         if (CollectionUtils.isNotEmpty(removeFieldActions)) {
             removeFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
-                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.attribute()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.removeField(tableName, fieldName, jsonDatabaseChange.getAttribute()));
             });
         }
     }
@@ -100,9 +107,9 @@ public class JsonDbUpdateService {
         final List<JsonDatabaseChange> renameFieldActions = actionListMap.get(Action.RENAME);
         if (CollectionUtils.isNotEmpty(renameFieldActions)) {
             renameFieldActions.forEach(jsonDatabaseChange -> {
-                final String tableName = getTableNameFromEntity(jsonDatabaseChange.entity());
-                getFieldNameFromEntity(jsonDatabaseChange.entity(), jsonDatabaseChange.field())
-                        .ifPresent(fieldName -> jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.attribute(), jsonDatabaseChange.newName()));
+                final String tableName = getTableNameFromEntity(jsonDatabaseChange.getEntity());
+                getFieldNameFromEntity(jsonDatabaseChange.getEntity(), jsonDatabaseChange.getField())
+                        .ifPresent(fieldName -> jsonDbUpdateRepository.renameField(tableName, fieldName, jsonDatabaseChange.getAttribute(), jsonDatabaseChange.getNewName()));
             });
         }
     }
@@ -157,10 +164,11 @@ public class JsonDbUpdateService {
         return Optional.empty();
     }
 
-    private Map<Action, List<JsonDatabaseChange>> readDatabaseChange(final String configurationFile) {
+    Map<Action, List<JsonDatabaseChange>> readDatabaseChange(final String configurationFile) {
         final List<JsonDatabaseChange> changes = new ArrayList<>();
 
         final CellProcessor[] processors = new CellProcessor[]{
+                new NotNull(),
                 new NotNull(),
                 new NotNull(),
                 new NotNull(),
@@ -185,10 +193,10 @@ public class JsonDbUpdateService {
         }
 
         return changes.stream()
-                .collect(Collectors.groupingBy(JsonDatabaseChange::action));
+                .collect(Collectors.groupingBy(JsonDatabaseChange::getAction));
     }
 
-    private List<String> findAllConfigurationFiles() {
+    List<String> findAllConfigurationFiles() {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         final URL url = loader.getResource(CONFIG_FOLDER);
 
@@ -206,7 +214,7 @@ public class JsonDbUpdateService {
                     .map(File::getName)
                     .map(FilenameUtils::removeExtension)
                     .sorted(Comparator.comparing(f1 -> f1.substring(1, f1.indexOf('_'))))
-                    .toList();
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
 
         return Collections.emptyList();

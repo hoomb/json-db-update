@@ -28,8 +28,20 @@ public class JsonDbUpdateRepository {
             " VALUES(?, ?, ?, ?, ?);";
     private static final String FIND_ALL_UPDATES_BY_ID_QUERY = "SELECT * FROM " + JSON_DATABASE_CHANGE_LOG_TABLE + " WHERE id = ANY (?)";
     private static final String RENAME_FIELD_QUERY = "UPDATE %s SET %s = (REPLACE(%s::TEXT, '\"%s\"', '\"%s\"'))::JSONB";
-    private static final String ADD_FIELD_QUERY = "UPDATE %s SET %s = jsonb_set(%s::jsonb, '{%s}','%s')";
-    private static final String DELETE_FIELD_QUERY = "UPDATE %s SET %s = %s::JSONB #- '{%s}'";
+    private static final String ADD_FIELD_QUERY = "UPDATE %1$s SET %2$s = (" +
+            " CASE jsonb_typeof(%2$s::jsonb)" +
+            "   WHEN 'array' THEN COALESCE(" +
+            "     (SELECT jsonb_agg(jsonb_set(elem, '{%3$s}', '%4$s')) FROM jsonb_array_elements(%2$s::jsonb) AS elem)," +
+            "     '[]'::jsonb)" +
+            "   ELSE jsonb_set(%2$s::jsonb, '{%3$s}', '%4$s')" +
+            " END) WHERE %2$s IS NOT NULL";
+    private static final String DELETE_FIELD_QUERY = "UPDATE %1$s SET %2$s = (" +
+            " CASE jsonb_typeof(%2$s::jsonb)" +
+            "   WHEN 'array' THEN COALESCE(" +
+            "     (SELECT jsonb_agg(elem #- '{%3$s}') FROM jsonb_array_elements(%2$s::jsonb) AS elem)," +
+            "     '[]'::jsonb)" +
+            "   ELSE %2$s::jsonb #- '{%3$s}'" +
+            " END) WHERE %2$s IS NOT NULL";
 
     public Connection createConnection() throws SQLException {
         final ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.getInstance();
@@ -82,7 +94,7 @@ public class JsonDbUpdateRepository {
     }
 
     public void addField(final String tableName, final String fieldName, final String attribute, final String value) {
-        final String addFieldQuery = String.format(ADD_FIELD_QUERY, tableName, fieldName, fieldName, attribute.replace('.', ','), value);
+        final String addFieldQuery = String.format(ADD_FIELD_QUERY, tableName, fieldName, attribute.replace('.', ','), value);
 
         try (final Connection connection = createConnection();
              final Statement statement = connection.createStatement()) {
@@ -95,7 +107,7 @@ public class JsonDbUpdateRepository {
     }
 
     public void removeField(final String tableName, final String fieldName, final String attribute) {
-        final String deleteFieldQuery = String.format(DELETE_FIELD_QUERY, tableName, fieldName, fieldName, attribute.replace('.', ','));
+        final String deleteFieldQuery = String.format(DELETE_FIELD_QUERY, tableName, fieldName, attribute.replace('.', ','));
 
         try (final Connection connection = createConnection();
              final Statement statement = connection.createStatement()) {

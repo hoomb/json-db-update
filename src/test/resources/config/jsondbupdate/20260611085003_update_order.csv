@@ -1,0 +1,3 @@
+action;entity;field;attribute;newName;value
+REMOVE;Order;extraCosts;title;;
+REMOVE;Order;extraCosts;subTitle;;

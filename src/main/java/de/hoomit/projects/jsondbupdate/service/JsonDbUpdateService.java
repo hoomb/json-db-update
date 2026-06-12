@@ -58,8 +58,8 @@ public class JsonDbUpdateService {
 
         if (CollectionUtils.isNotEmpty(allApplied)) {
             configurationFiles.removeAll(allApplied.stream()
-                    .map(JsonDatabaseChangeLog::id)
-                    .toList());
+                    .map(JsonDatabaseChangeLog::getId)
+                    .collect(Collectors.toList()));
         }
 
         if (CollectionUtils.isNotEmpty(configurationFiles)) {

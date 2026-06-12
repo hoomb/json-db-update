@@ -33,11 +33,11 @@ class JsonDatabaseChangeLogMapperTest {
 
         final JsonDatabaseChangeLog log = mapper.mapTo(resultSet);
 
-        assertEquals("20260611085003_update_order", log.id());
-        assertEquals("config/jsondbupdate/20260611085003_update_order.csv", log.filename());
-        assertEquals(executed.toInstant(), log.dateExecuted().toInstant());
-        assertEquals("abc123", log.md5Sum());
-        assertEquals("", log.description());
+        assertEquals("20260611085003_update_order", log.getId());
+        assertEquals("config/jsondbupdate/20260611085003_update_order.csv", log.getFilename());
+        assertEquals(executed.toInstant(), log.getDateExecuted().toInstant());
+        assertEquals("abc123", log.getMd5Sum());
+        assertEquals("", log.getDescription());
     }
 
     @Test
@@ -51,7 +51,7 @@ class JsonDatabaseChangeLogMapperTest {
 
         final JsonDatabaseChangeLog log = mapper.mapTo(resultSet(values));
 
-        assertNull(log.dateExecuted());
+        assertNull(log.getDateExecuted());
     }
 
     /** Minimal ResultSet stub via dynamic proxy - avoids a mocking dependency. */

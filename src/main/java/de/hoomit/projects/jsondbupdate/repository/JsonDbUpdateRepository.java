@@ -123,11 +123,11 @@ public class JsonDbUpdateRepository {
         try (final Connection connection = createConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_STATEMENT)) {
 
-            preparedStatement.setString(1, jsonDatabaseChangeLog.id());
-            preparedStatement.setString(2, jsonDatabaseChangeLog.filename());
-            preparedStatement.setTimestamp(3, Timestamp.from(jsonDatabaseChangeLog.dateExecuted().toInstant()));
-            preparedStatement.setString(4, jsonDatabaseChangeLog.md5Sum());
-            preparedStatement.setString(5, jsonDatabaseChangeLog.description());
+            preparedStatement.setString(1, jsonDatabaseChangeLog.getId());
+            preparedStatement.setString(2, jsonDatabaseChangeLog.getFilename());
+            preparedStatement.setTimestamp(3, Timestamp.from(jsonDatabaseChangeLog.getDateExecuted().toInstant()));
+            preparedStatement.setString(4, jsonDatabaseChangeLog.getMd5Sum());
+            preparedStatement.setString(5, jsonDatabaseChangeLog.getDescription());
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {

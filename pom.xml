@@ -31,12 +31,12 @@
         <developerConnection>scm:git:git@github.com:hoomb/json-db-update.git</developerConnection>
         <url>scm:git:git@github.com:hoomb/json-db-update.git</url>
         <connection>scm:git:git@github.com:hoomb/json-db-update.git</connection>
-        <tag>json-db-update-1.13</tag>
+        <tag>json-db-update-1.16</tag>
     </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>11</maven.compiler.release>
         <postgres.version>42.7.10</postgres.version>
         <maven-toolchains-plugin.version>1.1</maven-toolchains-plugin.version>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>

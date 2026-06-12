@@ -31,7 +31,7 @@
         <developerConnection>scm:git:git@github.com:hoomb/json-db-update.git</developerConnection>
         <url>scm:git:git@github.com:hoomb/json-db-update.git</url>
         <connection>scm:git:git@github.com:hoomb/json-db-update.git</connection>
-        <tag>json-db-update-1.13</tag>
+        <tag>json-db-update-1.16</tag>
     </scm>
 
     <properties>
